@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+{% block title %}Acceder{% endblock %}
+{% block extra_head %}
+<style>
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* BG decorativo */
+.auth-page::before {
+  content: '';
+  position: absolute;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(45,212,191,0.06) 0%, transparent 65%);
+  top: -200px; left: -200px;
+  pointer-events: none;
+}
+.auth-page::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(8,145,178,0.05) 0%, transparent 65%);
+  bottom: -150px; right: -100px;
+  pointer-events: none;
+}
+
+/* CARD */
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg), 0 0 60px rgba(45,212,191,0.06);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* HEADER MARCA */
+.auth-brand {
+  padding: 32px 36px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.brand-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-accent);
+  flex-shrink: 0;
+}
+.brand-icon svg { width: 22px; height: 22px; fill: #0f1923; }
+.brand-name-s { font-family: var(--font-serif); font-style: italic; font-size: 20px; color: var(--accent); line-height: 1; }
+.brand-name-rest { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.3px; line-height: 1.3; }
+.brand-tagline { font-size: 11px; color: var(--text3); font-family: var(--font-mono); margin-top: 2px; }
+
+/* TABS */
+.auth-tabs {
+  display: flex;
+  padding: 20px 36px 0;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 0 14px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: color .2s;
+  letter-spacing: 0.2px;
+}
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+  transform: scaleX(0);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 8px rgba(45,212,191,0.5);
+}
+.tab-btn.active { color: var(--text); }
+.tab-btn.active::after { transform: scaleX(1); }
+.tab-btn:hover { color: var(--text2); }
+
+/* PANELS */
+.auth-panels { padding: 28px 36px 36px; }
+.auth-panel { display: none; }
+.auth-panel.active { display: block; }
+
+/* FORM */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 7px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.form-input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 12px 15px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: all .2s;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+.form-input::placeholder { color: var(--text3); }
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(45,212,191,0.1), inset 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.form-error {
+  background: rgba(251,113,133,0.08);
+  border: 1px solid rgba(251,113,133,0.2);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.form-success {
+  background: rgba(74,222,128,0.07);
+  border: 1px solid rgba(74,222,128,0.18);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 13px;
+  color: var(--green);
+  margin-bottom: 18px;
+}
+
+/* STRENGTH */
+.strength-wrap { margin-top: 6px; }
+.strength-bar-bg { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.strength-fill { height: 100%; border-radius: 99px; transition: width .3s, background .3s; width: 0; }
+.strength-label { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: var(--font-mono); }
+
+/* MATCH HINT */
+.match-hint { font-size: 11px; margin-top: 4px; font-family: var(--font-mono); }
+
+/* TERMS */
+.terms-row { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0 4px; }
+.terms-row input[type=checkbox] { margin-top: 2px; accent-color: var(--accent); width: 15px; height: 15px; flex-shrink: 0; }
+.terms-row label { font-size: 12px; color: var(--text2); cursor: pointer; line-height: 1.6; }
+.terms-row a { color: var(--accent); }
+
+/* BUTTONS */
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  color: #0a1520;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all .2s;
+  box-shadow: var(--shadow-accent);
+  letter-spacing: 0.2px;
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 6px 28px rgba(45,212,191,0.28); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.divider span { font-size: 11px; color: var(--text3); font-family: var(--font-mono); }
+
+/* FOOTER */
+.auth-footer {
+  padding: 16px 36px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text3);
+  text-align: center;
+  line-height: 1.8;
+}
+.auth-footer a { color: var(--text2); transition: color .15s; }
+.auth-footer a:hover { color: var(--accent); }
+
+/* FLOATING GRID DECO */
+.deco-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(45,212,191,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,212,191,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 500px) {
+  .auth-card { border-radius: 16px; }
+  .auth-brand, .auth-tabs, .auth-panels, .auth-footer { padding-left: 20px; padding-right: 20px; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+  <div class="deco-grid"></div>
+
+  <div class="auth-card">
+    <!-- MARCA -->
+    <div class="auth-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+      </div>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:4px;">
+          <span class="brand-name-s">s.</span>
+          <span class="brand-name-rest">Business Health Center</span>
+        </div>
+        <div class="brand-tagline">El pulso financiero de tu empresa</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="tab-btn {% if not show_register %}active{% endif %}" onclick="switchTab('login', this)">Iniciar sesión</button>
+      <button class="tab-btn {% if show_register %}active{% endif %}" onclick="switchTab('register', this)">Crear cuenta</button>
+    </div>
+
+    <!-- PANELS -->
+    <div class="auth-panels">
+
+      <!-- LOGIN PANEL -->
+      <div class="auth-panel {% if not show_register %}active{% endif %}" id="panel-login">
+        {% if login_error %}
+        <div class="form-error">⚠ {{ login_error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+          <input type="hidden" name="tab" value="login">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-input" placeholder="tu@empresa.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña</label>
+            <input type="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn-primary">Entrar al panel →</button>
+        </form>
+      </div>
+
+      <!-- REGISTER PANEL -->
+      <div class="auth-panel {% if show_register %}active{% endif %}" id="panel-register">
+        {% if register_error %}
+        <div class="form-error">⚠ {{ register_error }}</div>
+        {% endif %}
+        {% if register_success %}
+        <div class="form-success">✓ {{ register_success }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}" id="regForm">
+          <input type="hidden" name="tab" value="register">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input type="text" name="name" class="form-input" placeholder="Ana García" required autocomplete="given-name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Empresa</label>
+              <input type="text" name="company" class="form-input" placeholder="Mi Empresa SL">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" name="reg_email" class="form-input" placeholder="ana@empresa.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña *</label>
+            <input type="password" name="reg_password" id="regPwd" class="form-input" placeholder="Mínimo 6 caracteres" required oninput="checkStrength(this.value)">
+            <div class="strength-wrap">
+              <div class="strength-bar-bg"><div class="strength-fill" id="sFill"></div></div>
+              <div class="strength-label" id="sLabel"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar contraseña *</label>
+            <input type="password" name="reg_confirm" id="regConfirm" class="form-input" placeholder="Repite la contraseña" required oninput="checkMatch()">
+            <div class="match-hint" id="matchHint"></div>
+          </div>
+          <div class="terms-row">
+            <input type="checkbox" id="terms" required>
+            <label for="terms">Acepto los <a href="#">Términos de uso</a> y la <a href="#">Política de privacidad</a></label>
+          </div>
+          <button type="submit" class="btn-primary" id="regBtn">Crear mi cuenta →</button>
+        </form>
+      </div>
+
+    </div><!-- /panels -->
+
+    <div class="auth-footer">
+      Al usar s.Business Health Center aceptas nuestros <a href="#">Términos</a> y <a href="#">Privacidad</a>.<br>
+      © 2025 s.Business Health Center · Todos los derechos reservados
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+function checkStrength(val) {
+  const fill = document.getElementById('sFill'), label = document.getElementById('sLabel');
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    {pct:'20%', color:'#fb7185', text:'Muy débil'},
+    {pct:'40%', color:'#fbbf24', text:'Débil'},
+    {pct:'60%', color:'#fbbf24', text:'Regular'},
+    {pct:'80%', color:'#2dd4bf', text:'Fuerte'},
+    {pct:'100%',color:'#4ade80', text:'Muy fuerte'},
+  ];
+  const lvl = levels[Math.min(score, 4)];
+  fill.style.width = val.length ? lvl.pct : '0';
+  fill.style.background = lvl.color;
+  label.textContent = val.length ? lvl.text : '';
+  label.style.color = lvl.color;
+}
+
+function checkMatch() {
+  const hint = document.getElementById('matchHint');
+  const pwd = document.getElementById('regPwd').value;
+  const cfm = document.getElementById('regConfirm').value;
+  if (!cfm) { hint.textContent = ''; return; }
+  if (cfm === pwd) { hint.textContent = '✓ Coinciden'; hint.style.color = '#2dd4bf'; }
+  else             { hint.textContent = '✗ No coinciden'; hint.style.color = '#fb7185'; }
+}
+
+// Si hay error de registro, mantener el tab abierto
+{% if show_register %}
+// ya está activo por Jinja
+{% endif %}
+</script>
+{% endblock %}

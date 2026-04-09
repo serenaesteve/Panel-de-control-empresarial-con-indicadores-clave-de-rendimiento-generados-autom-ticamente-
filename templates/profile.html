@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Perfil{% endblock %}
+{% block extra_head %}
+<style>
+.app{display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:20;}
+.sidebar-logo{padding:22px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-accent);flex-shrink:0;}
+.logo-s{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--accent);line-height:1.2;}
+.logo-rest{font-family:var(--font-display);font-style:normal;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.2px;}
+.logo-company{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:1px;}
+.sidebar-nav{padding:12px 10px;flex:1;}
+.nav-section{font-size:10px;font-family:var(--font-mono);color:var(--text3);letter-spacing:1.4px;text-transform:uppercase;padding:16px 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;transition:all .15s;margin-bottom:1px;text-decoration:none;}
+.nav-item:hover{background:rgba(45,212,191,0.07);color:var(--text);}
+.nav-item.active{background:rgba(45,212,191,0.1);color:var(--accent);font-weight:500;box-shadow:inset 2px 0 0 var(--accent);}
+.nav-item .ni{display:flex;align-items:center;justify-content:center;width:18px;flex-shrink:0;opacity:.8;}
+.nav-badge{margin-left:auto;font-size:9px;background:rgba(45,212,191,0.12);color:var(--accent);padding:2px 7px;border-radius:99px;font-family:var(--font-mono);border:1px solid rgba(45,212,191,0.15);}
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border);}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm);}
+.user-chip:hover{border-color:rgba(45,212,191,0.25);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0f1923;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}
+.user-role{font-size:10px;color:var(--text3);font-family:var(--font-mono);}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,25,35,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;}
+.page-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);}
+.page-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px;}
+.btn-back{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border2);color:var(--text2);font-family:var(--font-display);font-size:12px;padding:7px 14px;border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;transition:all .15s;box-shadow:var(--shadow-sm);}
+.btn-back:hover{color:var(--text);border-color:var(--border3);}
+.content{padding:28px;flex:1;}
+.profile-grid{display:grid;grid-template-columns:260px 1fr;gap:20px;}
+
+.profile-aside-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 20px;text-align:center;box-shadow:var(--shadow-sm);}
+.profile-avatar-big{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#0f1923;margin:0 auto 14px;box-shadow:var(--shadow-accent);}
+.profile-name{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.profile-email{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-bottom:4px;}
+.profile-company{font-size:13px;color:var(--text2);margin-bottom:14px;}
+.profile-role-badge{display:inline-block;font-size:10px;font-family:var(--font-mono);background:rgba(45,212,191,0.1);color:var(--accent);border:1px solid rgba(45,212,191,0.2);padding:3px 12px;border-radius:99px;margin-bottom:22px;}
+.stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-box{background:var(--bg3);border-radius:var(--radius-sm);padding:12px 8px;border:1px solid var(--border);}
+.stat-val{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);}
+.stat-lbl{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:2px;}
+
+.forms-col{display:flex;flex-direction:column;gap:16px;}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-sm);}
+.form-card-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:9px;}
+.form-card-icon{width:30px;height:30px;border-radius:8px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{margin-bottom:14px;}
+.form-group:last-of-type{margin-bottom:0;}
+.form-label{display:block;font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px;font-family:var(--font-mono);letter-spacing:.3px;}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-size:13px;outline:none;transition:all .2s;box-shadow:var(--shadow-sm);}
+.form-input::placeholder{color:var(--text3);}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,212,191,0.1),var(--shadow-sm);}
+.form-input:disabled{opacity:.45;cursor:not-allowed;}
+.form-actions{display:flex;justify-content:flex-end;margin-top:18px;}
+.btn-save{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius-sm);padding:10px 24px;color:#0f1923;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-accent);}
+.btn-save:hover{opacity:.9;transform:translateY(-1px);}
+.btn-danger{background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.18);border-radius:var(--radius-sm);padding:10px 20px;color:var(--red);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-danger:hover{background:rgba(251,113,133,0.15);}
+.alert-success{background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.18);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--green);margin-bottom:18px;}
+.alert-error{background:rgba(251,113,133,0.07);border:1px solid rgba(251,113,133,0.18);border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;color:var(--red);margin-bottom:18px;}
+@media(max-width:900px){.profile-grid{grid-template-columns:1fr;}.form-row{grid-template-columns:1fr;}}
+@media(max-width:768px){.sidebar{transform:translateX(-100);}.main{margin-left:0;}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app">
+  {% include '_sidebar.html' %}
+  <div class="main">
+    <div class="topbar">
+      <div><div class="page-title">Perfil y configuración</div><div class="page-sub">Gestiona tu cuenta</div></div>
+      <a href="{{ url_for('dashboard') }}" class="btn-back">← Volver</a>
+    </div>
+    <div class="content">
+      {% if success %}<div class="alert-success">✓ {{ success }}</div>{% endif %}
+      {% if error %}<div class="alert-error">✗ {{ error }}</div>{% endif %}
+      <div class="profile-grid">
+        <div>
+          <div class="profile-aside-card">
+            <div class="profile-avatar-big">{{ user.name[0].upper() }}</div>
+            <div class="profile-name">{{ user.name }}</div>
+            <div class="profile-email">{{ user.email }}</div>
+            <div class="profile-company">{{ user.company or 'Sin empresa' }}</div>
+            <div class="profile-role-badge">ADMINISTRADOR</div>
+            <div class="stats-mini">
+              <div class="stat-box"><div class="stat-val">Pro</div><div class="stat-lbl">Plan actual</div></div>
+              <div class="stat-box"><div class="stat-val">Q3</div><div class="stat-lbl">Período activo</div></div>
+              <div class="stat-box" style="grid-column:1/-1;text-align:left;">
+                <div class="stat-lbl">Miembro desde</div>
+                <div style="font-size:12px;color:var(--text2);margin-top:4px;font-family:var(--font-mono);">{{ user.created_at[:10] if user.created_at else '—' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="forms-col">
+          <div class="form-card">
+            <div class="form-card-title"><span class="form-card-icon">👤</span> Datos personales</div>
+            <form method="POST"><input type="hidden" name="action" value="update">
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Nombre completo</label><input type="text" name="name" class="form-input" value="{{ user.name }}" required></div>
+                <div class="form-group"><label class="form-label">Empresa</label><input type="text" name="company" class="form-input" value="{{ user.company or '' }}" placeholder="Mi Empresa SL"></div>
+              </div>
+              <div class="form-group"><label class="form-label">Email (no editable)</label><input type="email" class="form-input" value="{{ user.email }}" disabled></div>
+              <div class="form-actions"><button type="submit" class="btn-save">Guardar cambios</button></div>
+            </form>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title"><span class="form-card-icon">🔒</span> Cambiar contraseña</div>
+            <form method="POST"><input type="hidden" name="action" value="password">
+              <div class="form-group"><label class="form-label">Contraseña actual</label><input type="password" name="current_password" class="form-input" placeholder="••••••••" required></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Nueva contraseña</label><input type="password" name="new_password" class="form-input" placeholder="Mínimo 6 caracteres" required></div>
+                <div class="form-group"><label class="form-label">Confirmar nueva</label><input type="password" name="confirm_password" class="form-input" placeholder="Repite" required></div>
+              </div>
+              <div class="form-actions"><button type="submit" class="btn-save">Actualizar contraseña</button></div>
+            </form>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title"><span class="form-card-icon">⚠️</span> Zona de peligro</div>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.7;">Estas acciones son irreversibles.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <button class="btn-danger" onclick="return confirm('¿Exportar todos tus datos?')">Exportar mis datos</button>
+              <button class="btn-danger" style="font-weight:600;" onclick="return confirm('¿Eliminar cuenta? No se puede deshacer.')">Eliminar cuenta</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

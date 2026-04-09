@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %}Analíticas{% endblock %}
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+.app{display:flex;min-height:100vh;}
+/* Sidebar reutiliza estilos del dashboard */
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:20;}
+.sidebar-logo{padding:22px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-accent);flex-shrink:0;}
+.logo-s{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--accent);line-height:1.2;}
+.logo-rest{font-family:var(--font-display);font-style:normal;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.2px;}
+.logo-company{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sidebar-nav{padding:12px 10px;flex:1;overflow-y:auto;}
+.nav-section{font-size:10px;font-family:var(--font-mono);color:var(--text3);letter-spacing:1.4px;text-transform:uppercase;padding:16px 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:400;transition:all .15s;margin-bottom:1px;text-decoration:none;border:none;background:none;width:100%;}
+.nav-item:hover{background:rgba(45,212,191,0.07);color:var(--text);}
+.nav-item.active{background:rgba(45,212,191,0.1);color:var(--accent);font-weight:500;box-shadow:inset 2px 0 0 var(--accent);}
+.nav-item .ni{display:flex;align-items:center;justify-content:center;width:18px;flex-shrink:0;opacity:.8;}
+.nav-item.active .ni{opacity:1;}
+.nav-badge{margin-left:auto;font-size:9px;background:rgba(45,212,191,0.12);color:var(--accent);padding:2px 7px;border-radius:99px;font-family:var(--font-mono);border:1px solid rgba(45,212,191,0.15);}
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border);}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm);}
+.user-chip:hover{border-color:rgba(45,212,191,0.25);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0f1923;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}
+.user-role{font-size:10px;color:var(--text3);font-family:var(--font-mono);}
+
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,25,35,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;}
+.page-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);}
+.page-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px;}
+
+.content{padding:24px 28px 40px;flex:1;}
+
+/* RESUMEN STRIP */
+.resumen-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
+.res-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow-sm);transition:all .2s;}
+.res-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.res-label{font-size:10px;color:var(--text3);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.res-value{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text);line-height:1;}
+.res-sub{font-size:10px;color:var(--text3);margin-top:4px;}
+
+/* TABS */
+.tab-bar{display:flex;gap:4px;margin-bottom:18px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:4px;}
+.tab{padding:8px 18px;border-radius:7px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .2s;border:none;background:none;font-family:var(--font-display);}
+.tab.active{background:rgba(45,212,191,0.12);color:var(--accent);box-shadow:0 0 12px rgba(45,212,191,0.08);}
+.tab:hover:not(.active){color:var(--text);background:rgba(255,255,255,0.04);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* CHART CARDS */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.chart-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.chart-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-bottom:16px;}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* TABLE */
+.txn-table{width:100%;border-collapse:collapse;font-size:12px;}
+.txn-table th{text-align:left;color:var(--text3);font-family:var(--font-mono);font-size:10px;letter-spacing:.8px;text-transform:uppercase;padding:0 0 10px;border-bottom:1px solid var(--border);}
+.txn-table th:nth-child(n+3){text-align:right;}
+.txn-table td{padding:10px 0;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.txn-table td:nth-child(n+3){text-align:right;font-family:var(--font-mono);font-size:11px;color:var(--text2);}
+.txn-table tr:last-child td{border-bottom:none;}
+.badge-canal{font-size:10px;font-family:var(--font-mono);background:rgba(45,212,191,0.1);color:var(--accent);border:1px solid rgba(45,212,191,0.15);padding:2px 8px;border-radius:99px;}
+
+/* EMPTY STATE */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;gap:16px;}
+.empty-icon{width:64px;height:64px;border-radius:18px;background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.15);display:flex;align-items:center;justify-content:center;font-size:28px;}
+.empty-title{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text);}
+.empty-desc{font-size:13px;color:var(--text2);max-width:380px;line-height:1.7;}
+.btn-primary-sm{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:9px;padding:11px 24px;color:#0a1520;font-size:13px;font-weight:700;text-decoration:none;box-shadow:var(--shadow-accent);}
+
+/* METRIC HIGHLIGHT */
+.highlight-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+.hl-card{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:14px;}
+.hl-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.hl-label{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-bottom:3px;}
+.hl-val{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text);}
+
+@media(max-width:1100px){.resumen-grid{grid-template-columns:repeat(3,1fr);}.chart-grid{grid-template-columns:1fr;}.highlight-row{grid-template-columns:1fr;}}
+@media(max-width:768px){.sidebar{transform:translateX(-100%);}.main{margin-left:0;}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app">
+  {% include '_sidebar.html' %}
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Analíticas detalladas</div>
+        <div class="page-sub">Desglose completo de tus datos de ventas</div>
+      </div>
+    </div>
+    <div class="content">
+      {% if not data %}
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">Sin datos para analizar</div>
+        <p class="empty-desc">Importa tu Excel con datos de ventas y aquí verás analíticas completas: evolución mensual, rendimiento por canal, comparativa de productos y mucho más.</p>
+        <a href="{{ url_for('importar') }}" class="btn-primary-sm">📥 Importar mi Excel</a>
+      </div>
+      {% else %}
+
+      <!-- RESUMEN GLOBAL -->
+      <div class="resumen-grid">
+        <div class="res-card">
+          <div class="res-label">Ingresos totales</div>
+          <div class="res-value">{{ data.resumen.total_ingresos }}</div>
+          <div class="res-sub">Período completo</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Beneficio neto</div>
+          <div class="res-value" style="color:var(--green);">{{ data.resumen.total_beneficio }}</div>
+          <div class="res-sub">Margen {{ data.resumen.margen_pct }}%</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Clientes nuevos</div>
+          <div class="res-value">{{ data.resumen.total_clientes }}</div>
+          <div class="res-sub">Total acumulado</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Transacciones</div>
+          <div class="res-value">{{ data.resumen.total_txn }}</div>
+          <div class="res-sub">Registros procesados</div>
+        </div>
+        <div class="res-card">
+          <div class="res-label">Ticket medio</div>
+          <div class="res-value" style="color:var(--accent);">{{ data.resumen.ticket_medio }}</div>
+          <div class="res-sub">Por transacción</div>
+        </div>
+      </div>
+
+      <!-- HIGHLIGHTS -->
+      <div class="highlight-row">
+        <div class="hl-card">
+          <div class="hl-icon" style="background:rgba(45,212,191,0.1);">🏆</div>
+          <div><div class="hl-label">Mejor mes</div><div class="hl-val">{{ data.resumen.mejor_mes }}</div></div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon" style="background:rgba(74,222,128,0.1);">⭐</div>
+          <div><div class="hl-label">Producto estrella</div><div class="hl-val">{{ data.resumen.mejor_producto }}</div></div>
+        </div>
+        <div class="hl-card">
+          <div class="hl-icon" style="background:rgba(251,191,36,0.1);">📡</div>
+          <div><div class="hl-label">Canal principal</div><div class="hl-val">{{ data.resumen.mejor_canal }}</div></div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('mensual',this)">Evolución mensual</button>
+        <button class="tab" onclick="switchTab('canales',this)">Por canal</button>
+        <button class="tab" onclick="switchTab('productos',this)">Por producto</button>
+        <button class="tab" onclick="switchTab('transacciones',this)">Transacciones</button>
+      </div>
+
+      <!-- TAB: MENSUAL -->
+      <div class="tab-panel active" id="tab-mensual">
+        <div class="chart-card">
+          <div class="chart-title">Ingresos, gastos y beneficio por mes</div>
+          <div class="chart-sub">Evolución temporal de todos los períodos</div>
+          <div style="position:relative;height:260px;">
+            <canvas id="chartMensual" role="img" aria-label="Evolución mensual de ingresos gastos y beneficio">Datos mensuales.</canvas>
+          </div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-title">Clientes nuevos por mes</div>
+            <div class="chart-sub">Captación mensual</div>
+            <div style="position:relative;height:200px;">
+              <canvas id="chartClientes" role="img" aria-label="Clientes nuevos por mes">Clientes por mes.</canvas>
+            </div>
+          </div>
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-title">Margen de beneficio mensual (%)</div>
+            <div class="chart-sub">Rentabilidad mes a mes</div>
+            <div style="position:relative;height:200px;">
+              <canvas id="chartMargen" role="img" aria-label="Margen de beneficio mensual">Margen mensual.</canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CANALES -->
+      <div class="tab-panel" id="tab-canales">
+        <div class="chart-grid" style="margin-bottom:16px;">
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-title">Ingresos por canal de venta</div>
+            <div class="chart-sub">Comparativa de rendimiento</div>
+            <div style="position:relative;height:280px;">
+              <canvas id="chartCanalIng" role="img" aria-label="Ingresos por canal">Ingresos por canal.</canvas>
+            </div>
+          </div>
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-title">Clientes captados por canal</div>
+            <div class="chart-sub">Efectividad de cada fuente</div>
+            <div style="position:relative;height:280px;">
+              <canvas id="chartCanalCli" role="img" aria-label="Clientes por canal">Clientes por canal.</canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: PRODUCTOS -->
+      <div class="tab-panel" id="tab-productos">
+        <div class="chart-card">
+          <div class="chart-title">Ingresos por producto</div>
+          <div class="chart-sub">Contribución de cada producto al total</div>
+          <div style="position:relative;height:260px;">
+            <canvas id="chartProdIng" role="img" aria-label="Ingresos por producto">Ingresos por producto.</canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Margen de beneficio por producto (%)</div>
+          <div class="chart-sub">Rentabilidad de cada línea de producto</div>
+          <div style="position:relative;height:220px;">
+            <canvas id="chartProdMargen" role="img" aria-label="Margen por producto">Margen por producto.</canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: TRANSACCIONES -->
+      <div class="tab-panel" id="tab-transacciones">
+        <div class="chart-card">
+          <div class="chart-title">Últimas 20 transacciones</div>
+          <div class="chart-sub">Detalle de registros importados</div>
+          <table class="txn-table">
+            <thead>
+              <tr><th>Fecha</th><th>Producto</th><th>Canal</th><th>Ingresos</th><th>Gastos</th><th>Beneficio</th><th>Clientes</th></tr>
+            </thead>
+            <tbody>
+              {% for r in data.txn_recientes %}
+              <tr>
+                <td>{{ r.fecha }}</td>
+                <td style="font-weight:500;">{{ r.producto }}</td>
+                <td><span class="badge-canal">{{ r.canal }}</span></td>
+                <td>€{{ "{:,.0f}".format(r.ingresos) }}</td>
+                <td>€{{ "{:,.0f}".format(r.gastos) }}</td>
+                <td style="color:{% if r.ingresos - r.gastos >= 0 %}var(--green){% else %}var(--red){% endif %};">
+                  €{{ "{:,.0f}".format(r.ingresos - r.gastos) }}
+                </td>
+                <td>{{ r.clientes_nuevos }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if data %}
+<script>
+const D = {{ data_json | safe }};
+const COLORS = ['#2dd4bf','#60a5fa','#4ade80','#fbbf24','#f472b6','#a78bfa','#fb7185'];
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// MENSUAL - barras + línea
+new Chart(document.getElementById('chartMensual'), {
+  type:'bar',
+  data:{
+    labels: D.por_mes.labels,
+    datasets:[
+      {label:'Ingresos', data:D.por_mes.ingresos, backgroundColor:'rgba(45,212,191,0.45)', borderColor:'#2dd4bf', borderWidth:1, borderRadius:4, order:2},
+      {label:'Gastos',   data:D.por_mes.gastos,   type:'line', borderColor:'#fb7185', borderDash:[5,4], borderWidth:2, pointBackgroundColor:'#fb7185', pointRadius:3, fill:false, tension:0.4, order:1},
+      {label:'Beneficio',data:D.por_mes.beneficio, backgroundColor:'rgba(74,222,128,0.3)', borderColor:'#4ade80', borderWidth:1, borderRadius:4, order:3}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#7a9bb5',font:{size:11}}}},
+    scales:{x:{ticks:{color:'#3d5a73',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+            y:{ticks:{color:'#3d5a73',font:{size:10},callback:v=>'€'+v},grid:{color:'rgba(255,255,255,0.04)'}}}}
+});
+
+// CLIENTES por mes
+new Chart(document.getElementById('chartClientes'), {
+  type:'bar',
+  data:{labels:D.por_mes.labels, datasets:[{label:'Clientes', data:D.por_mes.clientes, backgroundColor:'rgba(96,165,250,0.5)', borderColor:'#60a5fa', borderWidth:1, borderRadius:4}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#3d5a73',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+            y:{ticks:{color:'#3d5a73',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+});
+
+// MARGEN mensual
+new Chart(document.getElementById('chartMargen'), {
+  type:'line',
+  data:{labels:D.por_mes.labels, datasets:[{label:'Margen %', data:D.por_mes.margen, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.12)', borderWidth:2, pointBackgroundColor:'#fbbf24', pointRadius:4, fill:true, tension:0.4}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#3d5a73',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+            y:{ticks:{color:'#3d5a73',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'}}}}
+});
+
+// CANAL ingresos (horizontal bar)
+new Chart(document.getElementById('chartCanalIng'), {
+  type:'bar',
+  data:{labels:D.por_canal.labels, datasets:[{label:'Ingresos', data:D.por_canal.ingresos, backgroundColor:COLORS.map(c=>c+'99'), borderColor:COLORS, borderWidth:1, borderRadius:4}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#3d5a73',font:{size:10},callback:v=>'€'+v.toLocaleString()},grid:{color:'rgba(255,255,255,0.04)'}},
+            y:{ticks:{color:'#7a9bb5',font:{size:12}},grid:{display:false}}}}
+});
+
+// CANAL clientes (donut)
+new Chart(document.getElementById('chartCanalCli'), {
+  type:'doughnut',
+  data:{labels:D.por_canal.labels, datasets:[{data:D.por_canal.clientes, backgroundColor:COLORS, borderColor:'#1a2535', borderWidth:3}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+    plugins:{legend:{position:'right',labels:{color:'#7a9bb5',font:{size:11},padding:12}}}}
+});
+
+// PRODUCTO ingresos
+new Chart(document.getElementById('chartProdIng'), {
+  type:'bar',
+  data:{labels:D.por_producto.labels, datasets:[{label:'Ingresos', data:D.por_producto.ingresos, backgroundColor:COLORS.map(c=>c+'88'), borderColor:COLORS, borderWidth:1, borderRadius:4}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#7a9bb5',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}},
+            y:{ticks:{color:'#3d5a73',font:{size:10},callback:v=>'€'+v.toLocaleString()},grid:{color:'rgba(255,255,255,0.04)'}}}}
+});
+
+// PRODUCTO margen (horizontal)
+new Chart(document.getElementById('chartProdMargen'), {
+  type:'bar',
+  data:{labels:D.por_producto.labels, datasets:[{label:'Margen %', data:D.por_producto.margen, backgroundColor:'rgba(74,222,128,0.4)', borderColor:'#4ade80', borderWidth:1, borderRadius:4}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{color:'#3d5a73',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'},min:0,max:100},
+            y:{ticks:{color:'#7a9bb5',font:{size:12}},grid:{display:false}}}}
+});
+</script>
+{% endif %}
+{% endblock %}

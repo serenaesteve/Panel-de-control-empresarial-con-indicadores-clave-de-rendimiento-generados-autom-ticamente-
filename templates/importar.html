@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}Importar datos{% endblock %}
+{% block extra_head %}
+<style>
+.app{display:flex;min-height:100vh;}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:20;}
+.sidebar-logo{padding:22px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-accent);flex-shrink:0;}
+.logo-s{font-family:var(--font-serif);font-style:italic;font-size:13px;color:var(--accent);line-height:1.2;}
+.logo-rest{font-family:var(--font-display);font-style:normal;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.2px;}
+.logo-company{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:1px;}
+.sidebar-nav{padding:12px 10px;flex:1;}
+.nav-section{font-size:10px;font-family:var(--font-mono);color:var(--text3);letter-spacing:1.4px;text-transform:uppercase;padding:16px 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;transition:all .15s;margin-bottom:1px;text-decoration:none;}
+.nav-item:hover{background:rgba(45,212,191,0.07);color:var(--text);}
+.nav-item.active{background:rgba(45,212,191,0.1);color:var(--accent);font-weight:500;box-shadow:inset 2px 0 0 var(--accent);}
+.nav-item .ni{display:flex;align-items:center;justify-content:center;width:18px;flex-shrink:0;opacity:.8;}
+.nav-badge{margin-left:auto;font-size:9px;background:rgba(45,212,191,0.12);color:var(--accent);padding:2px 7px;border-radius:99px;font-family:var(--font-mono);border:1px solid rgba(45,212,191,0.15);}
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border);}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--border);text-decoration:none;transition:all .2s;box-shadow:var(--shadow-sm);}
+.user-chip:hover{border-color:rgba(45,212,191,0.25);}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0f1923;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2;}
+.user-role{font-size:10px;color:var(--text3);font-family:var(--font-mono);}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+.topbar{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,25,35,0.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:10;}
+.page-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);}
+.page-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:2px;}
+.btn-back{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border2);color:var(--text2);font-family:var(--font-display);font-size:12px;padding:7px 14px;border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;transition:all .15s;box-shadow:var(--shadow-sm);}
+.btn-back:hover{color:var(--text);}
+.content{padding:28px;flex:1;max-width:880px;}
+
+.alert{border-radius:var(--radius-sm);padding:13px 16px;font-size:13px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px;box-shadow:var(--shadow-sm);}
+.alert-success{background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.18);color:var(--green);}
+.alert-error{background:rgba(251,113,133,0.07);border:1px solid rgba(251,113,133,0.18);color:var(--red);}
+
+.status-bar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-sm);}
+.status-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.status-icon.loaded{background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.2);}
+.status-icon.empty{background:var(--bg3);border:1px solid var(--border);}
+.status-title{font-size:14px;font-weight:500;color:var(--text);}
+.status-sub{font-size:11px;color:var(--text3);font-family:var(--font-mono);}
+.btn-clear{background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.18);color:var(--red);font-family:var(--font-display);font-size:12px;padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;}
+.btn-clear:hover{background:rgba(251,113,133,0.15);}
+
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:var(--shadow-sm);}
+.section-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-icon{width:28px;height:28px;border-radius:7px;background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.15);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+
+.col-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.col-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;}
+.col-name{font-family:var(--font-mono);font-size:12px;color:var(--accent);margin-bottom:3px;}
+.col-type{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:5px;}
+.col-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+.col-req{font-size:10px;color:var(--red);font-family:var(--font-mono);margin-top:5px;}
+
+.ex-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--font-mono);}
+.ex-table th{background:rgba(45,212,191,0.06);color:var(--accent);padding:8px 10px;text-align:left;border:1px solid rgba(45,212,191,0.1);}
+.ex-table td{padding:7px 10px;border:1px solid var(--border);color:var(--text2);}
+.ex-table tr:nth-child(even) td{background:rgba(255,255,255,0.02);}
+
+.btn-plantilla{display:inline-flex;align-items:center;gap:7px;background:rgba(45,212,191,0.08);border:1px solid rgba(45,212,191,0.2);color:var(--accent);font-family:var(--font-display);font-size:12px;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;transition:all .15s;margin-top:14px;box-shadow:var(--shadow-sm);}
+.btn-plantilla:hover{background:rgba(45,212,191,0.14);}
+
+.drop-zone{border:2px dashed rgba(45,212,191,0.2);border-radius:var(--radius);padding:44px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);position:relative;}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(45,212,191,0.04);box-shadow:0 0 24px rgba(45,212,191,0.08);}
+.drop-icon{font-size:38px;margin-bottom:12px;opacity:.5;}
+.drop-main{font-size:14px;color:var(--text);font-weight:500;margin-bottom:5px;}
+.drop-sub{font-size:12px;color:var(--text3);}
+.drop-formats{font-size:11px;color:var(--text3);font-family:var(--font-mono);margin-top:8px;}
+.file-input-hidden{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;}
+.file-selected{display:none;margin-top:14px;background:rgba(45,212,191,0.07);border:1px solid rgba(45,212,191,0.15);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--accent);text-align:left;}
+.btn-upload{width:100%;margin-top:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius-sm);padding:13px;color:#0f1923;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow-accent);}
+.btn-upload:hover{opacity:.9;transform:translateY(-1px);}
+.btn-upload:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+.preview-card{background:var(--card);border:1px solid rgba(45,212,191,0.2);border-radius:var(--radius);padding:24px;margin-bottom:18px;box-shadow:0 0 30px rgba(45,212,191,0.06);}
+.preview-title{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.stat-box{background:var(--bg3);border-radius:var(--radius-sm);padding:13px;text-align:center;border:1px solid var(--border);}
+.stat-val{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text);}
+.stat-lbl{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:2px;}
+.prev-table{width:100%;border-collapse:collapse;font-size:12px;}
+.prev-table th{color:var(--text3);font-family:var(--font-mono);font-size:10px;letter-spacing:.8px;text-transform:uppercase;padding:0 0 8px;border-bottom:1px solid var(--border);text-align:left;}
+.prev-table td{padding:9px 0;border-bottom:1px solid var(--border);color:var(--text);}
+.prev-table tr:last-child td{border-bottom:none;}
+.badge-canal{font-size:10px;font-family:var(--font-mono);background:rgba(45,212,191,0.1);color:var(--accent);border:1px solid rgba(45,212,191,0.15);padding:2px 8px;border-radius:99px;}
+.btn-go{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius-sm);padding:11px 24px;color:#0f1923;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;box-shadow:var(--shadow-accent);margin-top:18px;}
+.btn-go:hover{opacity:.9;transform:translateY(-1px);}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.col-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="app">
+  {% include '_sidebar.html' %}
+  <div class="main">
+    <div class="topbar">
+      <div><div class="page-title">Importar datos desde Excel</div><div class="page-sub">Sube tu archivo y el dashboard calculará los KPIs reales</div></div>
+      <a href="{{ url_for('dashboard') }}" class="btn-back">← Volver</a>
+    </div>
+    <div class="content">
+      {% if success %}<div class="alert alert-success"><span>✓</span><span>{{ success }}</span></div>{% endif %}
+      {% if error %}<div class="alert alert-error"><span>✗</span><span>{{ error }}</span></div>{% endif %}
+
+      <div class="status-bar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="status-icon {% if rows_count > 0 %}loaded{% else %}empty{% endif %}">{% if rows_count > 0 %}✅{% else %}📂{% endif %}</div>
+          <div>
+            {% if rows_count > 0 %}
+            <div class="status-title">{{ rows_count }} filas activas — datos reales</div>
+            <div class="status-sub">El dashboard usa tus datos importados</div>
+            {% else %}
+            <div class="status-title">Sin datos importados</div>
+            <div class="status-sub">El dashboard muestra datos de demostración</div>
+            {% endif %}
+          </div>
+        </div>
+        {% if rows_count > 0 %}
+        <form method="POST" style="margin:0;">
+          <input type="hidden" name="action" value="clear">
+          <button type="submit" class="btn-clear" onclick="return confirm('¿Eliminar todos los datos importados?')">🗑 Limpiar datos</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><span class="section-icon">📋</span> Formato requerido del Excel</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.7;">El archivo debe tener estas <strong style="color:var(--text);">6 columnas exactas</strong> en la primera fila.</p>
+        <div class="col-grid">
+          <div class="col-item"><div class="col-name">fecha</div><div class="col-type">Texto · YYYY-MM-DD</div><div class="col-desc">Fecha de la venta o transacción.</div><div class="col-req">* Obligatorio</div></div>
+          <div class="col-item"><div class="col-name">producto</div><div class="col-type">Texto</div><div class="col-desc">Nombre del producto o servicio.</div><div class="col-req">* Obligatorio</div></div>
+          <div class="col-item"><div class="col-name">ingresos</div><div class="col-type">Número · €</div><div class="col-desc">Importe ingresado en euros, sin símbolo.</div><div class="col-req">* Obligatorio</div></div>
+          <div class="col-item"><div class="col-name">gastos</div><div class="col-type">Número · €</div><div class="col-desc">Coste asociado: COGS, comisión, etc.</div><div class="col-req">* Obligatorio</div></div>
+          <div class="col-item"><div class="col-name">clientes_nuevos</div><div class="col-type">Número entero</div><div class="col-desc">Clientes nuevos generados por esta venta.</div><div class="col-req">* Obligatorio</div></div>
+          <div class="col-item"><div class="col-name">canal</div><div class="col-type">Texto</div><div class="col-desc">Origen: Directo, Orgánico, Referidos…</div><div class="col-req">* Obligatorio</div></div>
+        </div>
+        <div style="overflow-x:auto;margin-bottom:4px;">
+          <table class="ex-table">
+            <thead><tr><th>fecha</th><th>producto</th><th>ingresos</th><th>gastos</th><th>clientes_nuevos</th><th>canal</th></tr></thead>
+            <tbody>
+              <tr><td>2025-01-05</td><td>Plan Básico</td><td>350</td><td>120</td><td>5</td><td>Orgánico</td></tr>
+              <tr><td>2025-01-12</td><td>Plan Pro</td><td>1200</td><td>400</td><td>3</td><td>Directo</td></tr>
+              <tr><td>2025-02-03</td><td>Plan Enterprise</td><td>4500</td><td>800</td><td>1</td><td>Referidos</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <a href="{{ url_for('descargar_plantilla') }}" class="btn-plantilla">⬇ Descargar plantilla de ejemplo</a>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><span class="section-icon">📤</span> Subir tu archivo</div>
+        <form method="POST" action="{{ url_for('importar') }}" enctype="multipart/form-data" id="uploadForm">
+          <input type="hidden" name="action" value="upload">
+          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <input type="file" name="excel_file" id="fileInput" class="file-input-hidden" accept=".xlsx,.xlsm" onchange="fileSelected(this)">
+            <div class="drop-icon">📊</div>
+            <div class="drop-main">Arrastra tu Excel aquí o haz clic para seleccionarlo</div>
+            <div class="drop-sub">Máximo 10 MB · una fila por venta</div>
+            <div class="drop-formats">.xlsx · .xlsm</div>
+          </div>
+          <div class="file-selected" id="fileSelected"></div>
+          <button type="submit" class="btn-upload" id="uploadBtn" disabled>
+            <span id="uploadIcon">⬆</span>
+            <span id="uploadText">Selecciona un archivo primero</span>
+          </button>
+        </form>
+      </div>
+
+      {% if preview and stats %}
+      <div class="preview-card">
+        <div class="preview-title">✅ Importación completada</div>
+        <div class="stats-mini">
+          <div class="stat-box"><div class="stat-val">{{ stats.filas }}</div><div class="stat-lbl">Filas</div></div>
+          <div class="stat-box"><div class="stat-val">{{ stats.productos }}</div><div class="stat-lbl">Productos</div></div>
+          <div class="stat-box"><div class="stat-val">{{ stats.clientes }}</div><div class="stat-lbl">Clientes nuevos</div></div>
+          <div class="stat-box"><div class="stat-val">€{{ "{:,.0f}".format(stats.ingresos) }}</div><div class="stat-lbl">Ingresos</div></div>
+          <div class="stat-box"><div class="stat-val">€{{ "{:,.0f}".format(stats.gastos) }}</div><div class="stat-lbl">Gastos</div></div>
+          <div class="stat-box"><div class="stat-val">€{{ "{:,.0f}".format(stats.ingresos - stats.gastos) }}</div><div class="stat-lbl">Beneficio</div></div>
+        </div>
+        <table class="prev-table">
+          <thead><tr><th>Fecha</th><th>Producto</th><th>Ingresos</th><th>Gastos</th><th>Clientes</th><th>Canal</th></tr></thead>
+          <tbody>
+            {% for row in preview %}
+            <tr>
+              <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2);">{{ row.fecha }}</td>
+              <td>{{ row.producto }}</td>
+              <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2);">€{{ "{:,.0f}".format(row.ingresos) }}</td>
+              <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2);">€{{ "{:,.0f}".format(row.gastos) }}</td>
+              <td style="font-family:var(--font-mono);font-size:11px;color:var(--text2);">{{ row.clientes_nuevos }}</td>
+              <td><span class="badge-canal">{{ row.canal }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <a href="{{ url_for('dashboard') }}" class="btn-go">Ver dashboard con mis datos →</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fileSelected(input) {
+  const file = input.files[0]; if (!file) return;
+  const sel = document.getElementById('fileSelected');
+  sel.style.display = 'block';
+  sel.textContent = '📄 ' + file.name + '  (' + (file.size/1024).toFixed(0) + ' KB)';
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = false;
+  document.getElementById('uploadText').textContent = 'Importar ' + file.name;
+}
+const zone = document.getElementById('dropZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag-over');
+  const fi = document.getElementById('fileInput');
+  fi.files = e.dataTransfer.files; fileSelected(fi);
+});
+document.getElementById('uploadForm').addEventListener('submit', function() {
+  const btn = document.getElementById('uploadBtn'); btn.disabled = true;
+  document.getElementById('uploadIcon').textContent = '⏳';
+  document.getElementById('uploadText').textContent = 'Procesando…';
+});
+</script>
+{% endblock %}

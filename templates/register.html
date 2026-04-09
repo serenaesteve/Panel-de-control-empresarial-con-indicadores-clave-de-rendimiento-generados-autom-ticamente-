@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Registro{% endblock %}
+{% block extra_head %}
+<style>
+.auth-wrap { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; }
+.auth-left {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 64px 56px; position: relative; overflow: hidden;
+}
+.auth-left::before {
+  content:''; position:absolute; width:500px; height:500px;
+  background:radial-gradient(circle,rgba(45,212,191,0.07) 0%,transparent 65%);
+  bottom:-120px; right:-120px; pointer-events:none;
+}
+.brand-wordmark { display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+.brand-logo-icon { width:48px; height:48px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-accent); flex-shrink:0; }
+.brand-logo-icon svg { width:24px; height:24px; fill:white; }
+.brand-s { font-family:var(--font-serif); font-style:italic; font-size:22px; color:var(--accent); line-height:1; }
+.brand-full { font-size:12px; font-weight:600; color:var(--text2); letter-spacing:.5px; }
+.brand-tagline { font-family:var(--font-serif); font-style:italic; font-size:24px; color:var(--text); line-height:1.4; margin-bottom:10px; }
+.brand-tagline em { color:var(--accent); font-style:normal; }
+.brand-desc { font-size:13px; color:var(--text2); line-height:1.8; margin-bottom:32px; }
+.steps { display:flex; flex-direction:column; gap:0; }
+.step { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+.step:last-child { border-bottom:none; }
+.step-num {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#0f1923; font-size:12px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:1px; box-shadow:var(--shadow-accent);
+  font-family:var(--font-mono);
+}
+.step-strong { font-size:13px; color:var(--text); font-weight:600; display:block; margin-bottom:2px; }
+.step-span { font-size:12px; color:var(--text3); }
+
+.auth-right { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:64px 56px; background:var(--bg); overflow-y:auto; }
+.auth-form-wrap { width:100%; max-width:420px; }
+.auth-eyebrow { font-size:11px; font-family:var(--font-mono); color:var(--accent); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px; }
+.auth-title { font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.auth-sub { font-size:13px; color:var(--text2); margin-bottom:28px; }
+.auth-sub a { color:var(--accent); }
+
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-size:12px; font-weight:500; color:var(--text2); margin-bottom:6px; }
+.form-input { width:100%; background:var(--card); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:12px 15px; color:var(--text); font-size:14px; outline:none; transition:all 0.2s; box-shadow:var(--shadow-sm); }
+.form-input::placeholder { color:var(--text3); }
+.form-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,212,191,0.1),var(--shadow-sm); }
+.form-hint { font-size:11px; color:var(--text3); margin-top:4px; font-family:var(--font-mono); }
+.form-error { background:rgba(251,113,133,0.08); border:1px solid rgba(251,113,133,0.2); border-radius:var(--radius-sm); padding:11px 14px; font-size:13px; color:var(--red); margin-bottom:18px; }
+
+.strength-bar-bg { height:3px; background:var(--border); border-radius:99px; margin-top:7px; overflow:hidden; }
+.strength-fill { height:100%; border-radius:99px; transition:width .3s, background .3s; width:0; }
+.strength-label { font-size:11px; color:var(--text3); margin-top:4px; font-family:var(--font-mono); }
+
+.terms-check { display:flex; align-items:flex-start; gap:10px; margin:14px 0 4px; }
+.terms-check input[type=checkbox] { margin-top:2px; accent-color:var(--accent); width:15px; height:15px; }
+.terms-check label { font-size:12px; color:var(--text2); cursor:pointer; line-height:1.5; }
+.terms-check a { color:var(--accent); }
+
+.btn-primary { width:100%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:var(--radius-sm); padding:13px; color:#0f1923; font-size:14px; font-weight:700; cursor:pointer; margin-top:6px; transition:all .2s; box-shadow:var(--shadow-accent); }
+.btn-primary:hover { opacity:.92; transform:translateY(-1px); }
+
+@media (max-width:768px) { .auth-wrap { grid-template-columns:1fr; } .auth-left { display:none; } .auth-right { padding:40px 24px; } .form-row { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div style="max-width:340px;position:relative;z-index:1;">
+      <div class="brand-wordmark">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div>
+          <div class="brand-s">s.</div>
+          <div class="brand-full">Business Health Center</div>
+        </div>
+      </div>
+      <div class="brand-tagline">Empieza en <em>minutos</em>. Resultados de inmediato.</div>
+      <p class="brand-desc">Crea tu cuenta gratis y conecta tus primeros datos. El dashboard se genera automáticamente.</p>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><span class="step-strong">Crea tu cuenta</span><span class="step-span">Gratis, sin tarjeta de crédito</span></div></div>
+        <div class="step"><div class="step-num">2</div><div><span class="step-strong">Accede al dashboard</span><span class="step-span">KPIs listos desde el primer minuto</span></div></div>
+        <div class="step"><div class="step-num">3</div><div><span class="step-strong">Sube tu Excel</span><span class="step-span">Importa tus ventas, clientes y gastos</span></div></div>
+        <div class="step"><div class="step-num">4</div><div><span class="step-strong">Toma decisiones</span><span class="step-span">Con datos reales y visualizaciones claras</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-eyebrow">Registro</div>
+      <div class="auth-title">Crear cuenta gratis</div>
+      <p class="auth-sub">¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
+
+      {% if error %}<div class="form-error">{{ error }}</div>{% endif %}
+
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre completo *</label>
+            <input type="text" name="name" class="form-input" placeholder="Ana García" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Empresa</label>
+            <input type="text" name="company" class="form-input" placeholder="Mi Empresa SL">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" name="email" class="form-input" placeholder="ana@empresa.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña *</label>
+          <input type="password" name="password" id="pwdInput" class="form-input" placeholder="Mínimo 6 caracteres" required oninput="checkStrength(this.value)">
+          <div class="strength-bar-bg"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="strength-label" id="strengthLabel"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar contraseña *</label>
+          <input type="password" name="confirm" id="confirmInput" class="form-input" placeholder="Repite la contraseña" required>
+          <div class="form-hint" id="matchHint"></div>
+        </div>
+        <div class="terms-check">
+          <input type="checkbox" id="terms" required>
+          <label for="terms">Acepto los <a href="#">Términos de uso</a> y la <a href="#">Política de privacidad</a></label>
+        </div>
+        <button type="submit" class="btn-primary">Crear cuenta →</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function checkStrength(val) {
+  const fill = document.getElementById('strengthFill'), label = document.getElementById('strengthLabel');
+  let score = 0;
+  if (val.length >= 6) score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    {pct:'20%',color:'#fb7185',text:'Muy débil'},
+    {pct:'40%',color:'#fbbf24',text:'Débil'},
+    {pct:'60%',color:'#fbbf24',text:'Regular'},
+    {pct:'80%',color:'#2dd4bf',text:'Fuerte'},
+    {pct:'100%',color:'#4ade80',text:'Muy fuerte'},
+  ];
+  const lvl = levels[Math.min(score,4)];
+  fill.style.width = val.length ? lvl.pct : '0';
+  fill.style.background = lvl.color;
+  label.textContent = val.length ? lvl.text : '';
+  label.style.color = lvl.color;
+}
+document.getElementById('confirmInput').addEventListener('input', function() {
+  const hint = document.getElementById('matchHint');
+  if (!this.value) { hint.textContent=''; return; }
+  if (this.value === document.getElementById('pwdInput').value) {
+    hint.textContent='✓ Coinciden'; hint.style.color='#2dd4bf';
+  } else {
+    hint.textContent='✗ No coinciden'; hint.style.color='#fb7185';
+  }
+});
+</script>
+{% endblock %}
