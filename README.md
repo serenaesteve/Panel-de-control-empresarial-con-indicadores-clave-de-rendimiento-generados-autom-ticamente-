@@ -1,4 +1,4 @@
-# KPIFlow — Panel de Control Empresarial
+#  — Panel de Control Empresarial
 
 Dashboard empresarial con KPIs generados automáticamente, login, registro y perfil de usuario.
 
